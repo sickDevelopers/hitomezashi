@@ -1,0 +1,135 @@
+const ROWS = 70;
+const SIZE = 10;
+const BAND_SIZE = 40;
+const matrix = new Array(ROWS);
+let center = [(ROWS * SIZE) / 2, (ROWS * SIZE) / 2]
+
+const snake = [
+  // center, radius
+  [center, 0],
+  [center, 0],
+  [center, 0],
+  [center, 0],
+  [center, 0],
+  [center, 0],
+  [center, 0]
+]
+      
+
+function parseSeed(seed) {
+  return seed.split("").map((letter) => !!letter.match(/[aeiouy]/i))
+}
+
+let seedX = crypto.getRandomValues(new Uint8Array(ROWS)).map(v => v%2)
+let seedY = crypto.getRandomValues(new Uint8Array(ROWS)).map(v => v%2)
+let radius;
+
+function setup() {
+  createCanvas(ROWS * SIZE, ROWS * SIZE);
+  
+  radius = Math.abs(Math.sin(Math.random()) * center[0]);
+}
+
+function inRadius(a, b, x, y, r) {
+  var dist_points = (a - x) * (a - x) + (b - y) * (b - y);
+    r *= r;
+    if (dist_points < r) {
+        return true;
+    }
+    return false;
+}
+
+function draw() {
+  
+  // if (frameCount%10 === 1) {
+  //   center = center + 1;
+  // }
+  
+  
+  if (frameCount%5 === 1) {
+    seedX = crypto.getRandomValues(new Uint8Array(ROWS)).map(v => v%2)
+    seedY = crypto.getRandomValues(new Uint8Array(ROWS)).map(v => v%2)
+    
+  }
+  
+  
+  radius = Math.abs(Math.sin(frameCount / 100)) * ((ROWS * SIZE / 2)+ BAND_SIZE);
+  
+  
+  background(81);
+  
+  stroke("white")
+  strokeWeight(1);
+  
+  // circle(center, center, radius * 2) 
+  
+  drawGrid((x, y, i, j) => {
+    
+    
+    snake.forEach((band, snakeIndex) => {
+      if (
+      
+        inRadius(band[0][0], band[0][1], x, y, band[1])
+        &&
+        !inRadius(band[0][0], band[0][1], x, y, band[1] - BAND_SIZE * snakeIndex)
+
+      ) {
+        drawRandomNoise(x, y, i, j);
+      }
+      
+      band[1] =  Math.abs(Math.sin(frameCount / 100)) * ((ROWS * SIZE / 2)+ BAND_SIZE * snakeIndex) - (snakeIndex * 50);
+      
+      
+    })
+    
+    
+    
+    
+    
+    
+    
+  })
+  
+  
+}
+
+
+
+function drawGrid(forEachPoint) {
+  for(let x = 0; x < seedX.length; x++) {
+    for(let y = 0; y < seedY.length; y++) {
+      forEachPoint(x * SIZE, y * SIZE, x, y)
+    }
+  }
+}
+
+function drawRandomNoise(x, y, i, j) {
+  if (seedX[i] && j%2) {
+      line(x, y, 
+         x, 
+         y  + SIZE  
+        )
+    }
+    
+    if (!seedX[i] && !(j%2)) {
+      line(x, y, 
+         x, 
+         y  + SIZE  
+        )
+    }
+    
+    
+    if (seedY[j] && i%2) {
+      line(x, y, 
+         x + SIZE, 
+         y  
+        )
+    }
+    
+    if (!seedY[j] && !(i%2)) {
+      line(x, y, 
+         x + SIZE, 
+         y  
+        )
+    }
+}
